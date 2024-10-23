@@ -64,5 +64,20 @@ def update_post(post_id):
     return Response(json.dumps(post_to_update, indent=4, sort_keys=False), mimetype='application/json'), 200
 
 
+@app.route('/api/posts/search', methods=['GET'])
+def search_post():
+    title = request.args.get("title")
+    content = request.args.get("content")
+
+    if not title and not content:
+        return jsonify([])
+
+    search_results = [post for post in POSTS if
+                      (title is None or title.lower() in post["title"].lower()) and
+                      (content is None or title.lower() in post["content"].lower())]
+
+    return Response(json.dumps(search_results, indent=4, sort_keys=False), mimetype='application/json'), 200
+
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5002, debug=True)
