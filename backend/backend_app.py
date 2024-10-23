@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -10,9 +10,33 @@ POSTS = [
 ]
 
 
+def validate_input_data(post_data):
+    if "title" not in post_data or "content" not in post_data:
+        return False
+    return True
+
+
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
     return jsonify(POSTS)
+
+
+@app.route('/api/posts', methods=['POST'])
+def add_post():
+    new_post = request.get_json()
+    if not validate_input_data(new_post):
+        return jsonify({"error": "Invalid book data (Keys 'title' and 'content' are necessary)"}, 400)
+
+    new_id = max([post["id"] for post in POSTS]) + 1
+
+    new_post = {
+        "id": new_id,
+        "title": new_post("title"),
+        "content": new_post("content")
+    }
+    POSTS.append(new_post)
+
+    return jsonify(new_post), 201
 
 
 if __name__ == '__main__':
