@@ -1,5 +1,6 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
+import json
 
 app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
@@ -31,21 +32,36 @@ def add_post():
 
     new_post = {
         "id": new_id,
-        "title": new_post["title"],
-        "content": new_post["content"]
+        "title": new_post.get("title"),
+        "content": new_post.get("content")
     }
     POSTS.append(new_post)
 
-    return jsonify(new_post), 201
+    return Response(json.dumps(new_post, indent=4, sort_keys=False), mimetype='application/json'), 201
 
 
 @app.route('/api/posts/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id):
-    post_to_delete = next((post for post in POSTS if post['id'] == post_id), 0)
+    post_to_delete = next((post for post in POSTS if post['id'] == post_id), None)
     if not post_to_delete:
         return jsonify({"error": "Post ID is not existing"}), 404
     POSTS.remove(post_to_delete)
     return jsonify({"message": f"Post with id {post_id} has been deleted successfully."}), 200
+
+
+@app.route('/api/posts/<int:post_id>', methods=['PUT'])
+def update_post(post_id):
+    post_to_update = next((post for post in POSTS if post['id'] == post_id), None)
+    if not post_to_update:
+        return jsonify({"error": "Post ID is not existing"}), 404
+    new_data = request.get_json()
+    new_title = new_data.get("title", None)
+    new_content = new_data.get("content", None)
+    if new_title:
+        post_to_update["title"] = new_title
+    if new_content:
+        post_to_update["content"] = new_content
+    return Response(json.dumps(post_to_update, indent=4, sort_keys=False), mimetype='application/json'), 200
 
 
 if __name__ == '__main__':
