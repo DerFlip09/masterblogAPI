@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
+from flask_swagger_ui import get_swaggerui_blueprint
 import json
 
 app = Flask(__name__)
@@ -89,6 +90,19 @@ def search_post():
                       (content is None or title.lower() in post["content"].lower())]
 
     return Response(json.dumps(search_results, indent=4, sort_keys=False), mimetype='application/json'), 200
+
+
+SWAGGER_URL = "/api/docs"  # (1) swagger endpoint e.g. HTTP://localhost:5002/api/docs
+API_URL = "/static/masterblog.json" # (2) ensure you create this dir and file
+
+swagger_ui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        'app_name': 'Masterblog API' # (3) You can change this if you like
+    }
+)
+app.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
 
 
 if __name__ == '__main__':
