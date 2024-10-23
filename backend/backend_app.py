@@ -19,7 +19,19 @@ def validate_input_data(post_data):
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
-    return jsonify(POSTS)
+    sort_by = request.args.get("sort")
+    direction = request.args.get("direction", "asc").lower()
+    if (sort_by is not None and sort_by not in ("title", "content")
+            or direction not in ("asc", "desc")):
+        return jsonify({"error": "Invalid input for sort_by and direction"}), 400
+
+    sorted_post = POSTS.copy()
+    if sort_by == "title":
+        sorted_post.sort(key=lambda x: x["title"], reverse=(direction == "desc"))
+    elif sort_by == "content":
+        sorted_post.sort(key=lambda x: x["content"], reverse=(direction == "desc"))
+
+    return Response(json.dumps(sorted_post, indent=4, sort_keys=False), mimetype='application/json'), 201
 
 
 @app.route('/api/posts', methods=['POST'])
